@@ -36,6 +36,28 @@ def clean_date(date_str):
         return return_date
 
 
+def clean_id(id_str, options):
+    try:
+        product_id = int(id_str)
+    except ValueError:
+        input('''
+              \n** ID ERROR **
+              \rThe ID format should be a number.
+              \rPress ENTER to try again.
+              \r**************''')
+        return
+    else:
+        if product_id in options:
+            return product_id
+        else:
+            input(f'''
+              \n** ID ERROR **
+              \rOptions: {options}
+              \rPress ENTER to try again.
+              \r**************''')
+            return
+        
+        
 def add_csv():
     with open('inventory.csv') as csvfile:
         data=csv.reader(csvfile)
@@ -59,7 +81,7 @@ def menu():
     while True:
         print('''  
               \nProduct Inventory
-              \rV) View All Products
+              \rV) Display a product by its ID
               \rA) Add Product
               \rB) Backup All Pruducts
               \rE) Exit''')
@@ -79,7 +101,24 @@ def app():
     while app_running: 
         choice = menu()
         if choice == 'v':
-            print('v')
+            # search products
+            id_options = []
+            for product in session.query(Product):
+                id_options.append(product.id)
+            id_error = True
+            while id_error:
+                id_choice = input(f'''
+                    \nID Options: {id_options}
+                    \rProduct ID: ''')
+                id_choice = clean_id(id_choice, id_options)
+                if type(id_choice) == int:
+                    id_error = False
+            the_product = session.query(Product).filter(Product.id==id_choice).first()
+            print(f'''
+                  \nName:: {the_product.product_name}
+                  \rPrice: ${the_product.product_price / 100}
+                  \rQuantity: {the_product.product_quantity}
+                  \rDate: {the_product.date_updated}''')
         elif choice == 'a':
             print('a')
         elif choice == 'b':
