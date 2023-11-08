@@ -32,6 +32,8 @@ def clean_date(date_str):
         return_date = datetime.date(year, month, day)
     except ValueError:
         print("** ERROR **")
+    except IndexError:
+        print("** ERROR **")
     else: 
         return return_date
 
@@ -115,12 +117,39 @@ def app():
                     id_error = False
             the_product = session.query(Product).filter(Product.id==id_choice).first()
             print(f'''
-                  \nName:: {the_product.product_name}
+                  \nName: {the_product.product_name}
                   \rPrice: ${the_product.product_price / 100}
                   \rQuantity: {the_product.product_quantity}
                   \rDate: {the_product.date_updated}''')
         elif choice == 'a':
-            print('a')
+            # add products   
+            product_name = input("New Product Name: ")
+            price_error = True
+            while price_error:
+                price = input("New Product Price: ")
+                price = clean_price(price)
+                if type(price) == int:
+                    price_error = False
+            quantity_error = True
+            while quantity_error:
+                quantity = input("New Product Quantity: ")
+                quantity = clean_quantity(quantity)
+                if type(quantity) == int:
+                    quantity_error = False
+            date_error = True
+            while date_error:
+                date = input("New Product Date Updated (ex m/d/y): ")
+                date = clean_date(date)
+                if type(date) == datetime.date:
+                    date_error = False
+            new_product = Product(product_name=product_name,
+                                product_price=price,
+                                product_quantity=quantity,
+                                date_updated=date)
+            session.add(new_product)
+            session.commit()
+            print('Book Added!')
+            time.sleep(1.5)
         elif choice == 'b':
             print('b')
         else:
