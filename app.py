@@ -79,6 +79,23 @@ def add_csv():
         session.commit()
 
 
+def backup_to_csv():
+    products = session.query(Product).all()
+    if not products:
+        print("No products to export.")
+        return
+    csv_file_path = 'backup.csv'
+    with open(csv_file_path, 'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(['ID', 'Product Name', 'Price', 'Quantity', 'Date Updated']) # Headers
+        for product in products:
+            csv_writer.writerow([product.id, product.product_name, 
+                                 product.product_price / 100, 
+                                 product.product_quantity, 
+                                 product.date_updated])
+    print(f"Data has been exported to {csv_file_path}")
+    
+
 def menu():
     while True:
         print('''  
@@ -151,7 +168,8 @@ def app():
             print('Book Added!')
             time.sleep(1.5)
         elif choice == 'b':
-            print('b')
+            # backup database to csv
+            backup_to_csv()
         else:
             print("Thank you come again!")
             app_running = False
