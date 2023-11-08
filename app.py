@@ -23,17 +23,30 @@ def clean_quantity(quantity_str):
         return int(cleaned_quantity)
 
 
+def clean_date(date_str):
+    months = ['January', 'February', 'March', 'April', 'May', 
+              'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    split_date = date_str.split('/')
+    try:
+        print(split_date)
+    except ValueError:
+        print("ERROR")
+        return
+    else: 
+        return
+
+
 def add_csv():
     with open('inventory.csv') as csvfile:
         data=csv.reader(csvfile)
+        next(data)
         for row in data:
             product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none()
             if product_in_db == None:
                 product_name = row[0]
                 product_price = clean_price(row[1])
                 product_quantity = clean_quantity(row[2])
-  
-        #         date_updated = row[3]
+                # date_updated = clean_date(row[3])                
         #         new_product = Product(product_name=product_name,
         #                               product_price=product_price,
         #                               product_quantity=product_quantity,
