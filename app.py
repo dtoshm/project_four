@@ -24,16 +24,16 @@ def clean_quantity(quantity_str):
 
 
 def clean_date(date_str):
-    months = ['January', 'February', 'March', 'April', 'May', 
-              'June', 'July', 'August', 'September', 'October', 'November', 'December']
     split_date = date_str.split('/')
     try:
-        print(split_date)
+        month = int(split_date[0])
+        day = int(split_date[1])
+        year = int(split_date[2])
+        return_date = datetime.date(year, month, day)
     except ValueError:
-        print("ERROR")
-        return
+        print("** ERROR **")
     else: 
-        return
+        return return_date
 
 
 def add_csv():
@@ -46,13 +46,13 @@ def add_csv():
                 product_name = row[0]
                 product_price = clean_price(row[1])
                 product_quantity = clean_quantity(row[2])
-                # date_updated = clean_date(row[3])                
-        #         new_product = Product(product_name=product_name,
-        #                               product_price=product_price,
-        #                               product_quantity=product_quantity,
-        #                               date_updated=date_updated)
-        #         session.add(new_product)
-        # session.commit()
+                date_updated = clean_date(row[3])                
+                new_product = Product(product_name=product_name,
+                                      product_price=product_price,
+                                      product_quantity=product_quantity,
+                                      date_updated=date_updated)
+                session.add(new_product)
+        session.commit()
 
 
 if __name__ == '__main__':
