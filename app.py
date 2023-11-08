@@ -55,6 +55,40 @@ def add_csv():
         session.commit()
 
 
+def menu():
+    while True:
+        print('''  
+              \nProduct Inventory
+              \rV) View All Products
+              \rA) Add Product
+              \rB) Backup All Pruducts
+              \rE) Exit''')
+        choice = input('What would you like to do? ').lower()
+        if choice in ['v', 'a', 'b', 'e']:
+            return choice
+        else:
+            input('''
+                  \rPlease choose one of the options above.
+                  \rA number from V, A, B, E.
+                  \rPress enter to try again.''')
+
+
+def app():
+    add_csv()
+    app_running = True
+    while app_running: 
+        choice = menu()
+        if choice == 'v':
+            print('v')
+        elif choice == 'a':
+            print('a')
+        elif choice == 'b':
+            print('b')
+        else:
+            print("Thank you come again!")
+            app_running = False
+
+
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
-    add_csv()
+    app()
