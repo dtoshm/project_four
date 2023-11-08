@@ -10,8 +10,8 @@ session = Session()
 Base = declarative_base()
 
 
-class Book(Base):
-    __tablename__ = "books"
+class Product(Base):
+    __tablename__ = "Inventory"
     
     id = Column(Integer, primary_key=True)
     product_name = Column('product_name', String)
