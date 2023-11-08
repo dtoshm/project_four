@@ -5,9 +5,9 @@ from sqlalchemy.orm import sessionmaker
 
 
 engine = create_engine('sqlite:///inventory.db', echo=False)
+Base = declarative_base()
 Session = sessionmaker(engine)
 session = Session()
-Base = declarative_base()
 
 
 class Product(Base):
