@@ -6,61 +6,106 @@ import time
 
 
 def clean_price(price_str):
+    """
+    Cleans a price string by removing the dollar sign, converting it to a float,
+    and returning an integer.
+
+    Args:
+    price_str (str): A string representing a price with a dollar sign.
+
+    Returns:
+    int: The cleaned price in cents.
+    """
     try:
         cleaned_price = float(price_str.replace('$', ''))
     except ValueError:
-        print('** ERROR **')
+        print('\n****** PRICE ERROR ******')
+        print('Please enter a price (ex 5.99)')
     else:
         return int(cleaned_price * 100)
 
 
 def clean_quantity(quantity_str):
+    """
+    Cleans a quantity string by converting it to an integer.
+
+    Args:
+    quantity_str (str): A string representing a quantity.
+
+    Returns:
+    int: The cleaned quantity as an integer.
+    """
     try:
         cleaned_quantity = int(quantity_str)
     except ValueError:
-        print('** ERROR **')
+        print('\n****** QUANTITY ERROR ******')
+        print('Please enter a quantity (ex 5)')
     else:
         return int(cleaned_quantity)
 
 
 def clean_date(date_str):
+    """
+    Cleans a date string in the format 'MM/DD/YYYY' and returns a datetime.date object.
+
+    Args:
+    date_str (str): A string representing a date in the 'MM/DD/YYYY' format.
+
+    Returns:
+    datetime.date: The cleaned date as a datetime.date object.
+    """
     split_date = date_str.split('/')
     try:
         month = int(split_date[0])
         day = int(split_date[1])
         year = int(split_date[2])
         return_date = datetime.date(year, month, day)
-    except ValueError:
-        print("** ERROR **")
-    except IndexError:
-        print("** ERROR **")
+    except (ValueError, IndexError):
+        print('\n****** DATE ERROR ******')
+        print('Please enter a date (ex 04/08/2021)')
     else: 
         return return_date
 
 
 def clean_id(id_str, options):
+    """
+    Cleans an ID string by converting it to an integer and validating it against a list of options.
+
+    Args:
+    id_str (str): A string representing an ID to be cleaned.
+    options (list): A list of valid options to compare the cleaned ID against.
+
+    Returns:
+    int or None: The cleaned ID if it's valid, or None if an error occurs.
+    """
     try:
         product_id = int(id_str)
     except ValueError:
         input('''
-              \n** ID ERROR **
+              \n****** ID ERROR ******
               \rThe ID format should be a number.
               \rPress ENTER to try again.
-              \r**************''')
+              \r************************''')
         return
     else:
         if product_id in options:
             return product_id
         else:
             input(f'''
-              \n** ID ERROR **
+              \n****** ID ERROR ******
               \rOptions: {options}
               \rPress ENTER to try again.
-              \r**************''')
+              \r**********************''')
             return
         
         
 def add_csv():
+    """
+    Adds data from a CSV file to a database session.
+
+    Args:
+    session: A SQLAlchemy database session object.
+    """
     with open('inventory.csv') as csvfile:
         data=csv.reader(csvfile)
         next(data)
@@ -80,6 +125,12 @@ def add_csv():
 
 
 def backup_to_csv():
+    """
+    Export product data from the database to a CSV file.
+
+    Args:
+    session: A SQLAlchemy database session object.
+    """
     products = session.query(Product).all()
     if not products:
         print("No products to export.")
@@ -97,6 +148,12 @@ def backup_to_csv():
     
 
 def menu():
+    """
+    Display a menu of options for a product inventory program.
+
+    Returns:
+    str: The user's choice (V, A, B, or E).
+    """
     while True:
         print('''  
               \nProduct Inventory
@@ -115,6 +172,9 @@ def menu():
 
 
 def app():
+    """
+    Run a product inventory application.
+    """
     add_csv()
     app_running = True
     while app_running: 
@@ -155,7 +215,7 @@ def app():
                     quantity_error = False
             date_error = True
             while date_error:
-                date = input("New Product Date Updated (ex m/d/y): ")
+                date = input("New Product Date Updated (ex 04/08/2021): ")
                 date = clean_date(date)
                 if type(date) == datetime.date:
                     date_error = False
@@ -176,5 +236,8 @@ def app():
 
 
 if __name__ == '__main__':
+    """
+    Main script execution entry point.
+    """
     Base.metadata.create_all(engine)
     app()
