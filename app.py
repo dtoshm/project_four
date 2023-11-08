@@ -138,9 +138,9 @@ def backup_to_csv():
     csv_file_path = 'backup.csv'
     with open(csv_file_path, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(['ID', 'Product Name', 'Price', 'Quantity', 'Date Updated']) # Headers
+        csv_writer.writerow(['product_name', 'product_price', 'product_quantity', 'date_updated']) # Headers
         for product in products:
-            csv_writer.writerow([product.id, product.product_name, 
+            csv_writer.writerow([product.product_name, 
                                  product.product_price / 100, 
                                  product.product_quantity, 
                                  product.date_updated])
@@ -269,9 +269,20 @@ def app():
             app_running = False
 
 
+
+def update(name_str):    
+    if session.query(Product).filter(Product.product_name==name_str).first():
+        print("Yes")
+    else:
+        print("No")
+
+
+
 if __name__ == '__main__':
     """
     Main script execution entry point.
     """
     Base.metadata.create_all(engine)
     app()
+    # update("Shiratamako - Rice Flour")
+        
