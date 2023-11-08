@@ -171,6 +171,83 @@ def menu():
                   \rPress enter to try again.''')
 
 
+def add_product():
+    """
+    Collects and validates information for a new product from user input.
+
+    This function guides the user to input a new product's name, price, quantity, and date updated. It validates the
+    input for each field to ensure it meets the required format and data type. If any input is invalid, the user is
+    prompted to re-enter the data until it's correct. Once all information is collected and validated, a new Product
+    object is created and added to the database session. The function then commits the changes to the database and
+    prints a success message.
+
+    Args:
+    None
+
+    Returns:
+    Nones
+    """
+    product_name = input("New Product Name: ")
+    price_error = True
+    while price_error:
+        price = input("New Product Price: ")
+        price = clean_price(price)
+        if type(price) == int:
+            price_error = False
+    quantity_error = True
+    while quantity_error:
+        quantity = input("New Product Quantity: ")
+        quantity = clean_quantity(quantity)
+        if type(quantity) == int:
+            quantity_error = False
+    date_error = True
+    while date_error:
+        date = input("New Product Date Updated (ex 04/08/2021): ")
+        date = clean_date(date)
+        if type(date) == datetime.date:
+            date_error = False
+    new_product = Product(product_name=product_name,
+                        product_price=price,
+                        product_quantity=quantity,
+                        date_updated=date)
+    session.add(new_product)
+    session.commit()
+    print('Book Added!')
+    
+
+def search_products():
+    """
+    Allow the user to search for and display product details by entering a product ID.
+
+    This function retrieves a list of available product IDs from the database and prompts the user to enter a product ID.
+    It validates the input and ensures that it corresponds to an existing product ID. Once a valid product ID is provided,
+    it retrieves and displays the details of the corresponding product, including name, price, quantity, and date updated.
+
+    Args:
+    None
+
+    Returns:
+    None
+    """
+    id_options = []
+    for product in session.query(Product):
+        id_options.append(product.id)
+    id_error = True
+    while id_error:
+        id_choice = input(f'''
+            \nID Options: {id_options}
+            \rProduct ID: ''')
+        id_choice = clean_id(id_choice, id_options)
+        if type(id_choice) == int:
+            id_error = False
+    the_product = session.query(Product).filter(Product.id==id_choice).first()
+    print(f'''
+            \nName: {the_product.product_name}
+            \rPrice: ${the_product.product_price / 100}
+            \rQuantity: {the_product.product_quantity}
+            \rDate: {the_product.date_updated}''')
+
+
 def app():
     """
     Run a product inventory application.
@@ -180,53 +257,10 @@ def app():
     while app_running: 
         choice = menu()
         if choice == 'v':
-            # search products
-            id_options = []
-            for product in session.query(Product):
-                id_options.append(product.id)
-            id_error = True
-            while id_error:
-                id_choice = input(f'''
-                    \nID Options: {id_options}
-                    \rProduct ID: ''')
-                id_choice = clean_id(id_choice, id_options)
-                if type(id_choice) == int:
-                    id_error = False
-            the_product = session.query(Product).filter(Product.id==id_choice).first()
-            print(f'''
-                  \nName: {the_product.product_name}
-                  \rPrice: ${the_product.product_price / 100}
-                  \rQuantity: {the_product.product_quantity}
-                  \rDate: {the_product.date_updated}''')
+            search_products()     
         elif choice == 'a':
-            # add products   
-            product_name = input("New Product Name: ")
-            price_error = True
-            while price_error:
-                price = input("New Product Price: ")
-                price = clean_price(price)
-                if type(price) == int:
-                    price_error = False
-            quantity_error = True
-            while quantity_error:
-                quantity = input("New Product Quantity: ")
-                quantity = clean_quantity(quantity)
-                if type(quantity) == int:
-                    quantity_error = False
-            date_error = True
-            while date_error:
-                date = input("New Product Date Updated (ex 04/08/2021): ")
-                date = clean_date(date)
-                if type(date) == datetime.date:
-                    date_error = False
-            new_product = Product(product_name=product_name,
-                                product_price=price,
-                                product_quantity=quantity,
-                                date_updated=date)
-            session.add(new_product)
-            session.commit()
-            print('Book Added!')
-            time.sleep(1.5)
+            add_product()  
+            time.sleep(1.0)
         elif choice == 'b':
             # backup database to csv
             backup_to_csv()
