@@ -5,5 +5,4 @@ Use your knowledge of CSV and File I/O and database ORMs to build a console appl
 Environment requirements found in requirements.txt.
 
 All code was written by me using the techdegree videos as my primary source. I used Google for learning how to skip the first row when adding
-data from a csv to a database. I also used ChatGPT to learn how to export
-a database into a backup csv.
+data from a csv to a database. I used ChatGPT to learn how to export a database into a backup csv. I used ChatGPT for refine my function comments.

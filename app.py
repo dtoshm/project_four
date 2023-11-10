@@ -5,6 +5,38 @@ import csv
 import time
 
 
+def clean_id(id_str, options):
+    """
+    Cleans an ID string by converting it to an integer and validating it against a list of options.
+
+    Args:
+    id_str (str): A string representing an ID to be cleaned.
+    options (list): A list of valid options to compare the cleaned ID against.
+
+    Returns:
+    int or None: The cleaned ID if it's valid, or None if an error occurs.
+    """
+    try:
+        product_id = int(id_str)
+    except ValueError:
+        input('''
+              \n****** ID ERROR ******
+              \rThe ID format should be a number.
+              \rPress ENTER to try again.
+              \r************************''')
+        return
+    else:
+        if product_id in options:
+            return product_id
+        else:
+            input(f'''
+              \n****** ID ERROR ******
+              \rOptions: {options}
+              \rPress ENTER to try again.
+              \r**********************''')
+            return
+
+
 def clean_price(price_str):
     """
     Cleans a price string by removing the dollar sign, converting it to a float,
@@ -67,38 +99,36 @@ def clean_date(date_str):
         return return_date
 
 
-def clean_id(id_str, options):
+def add_csv():
     """
-    Cleans an ID string by converting it to an integer and validating it against a list of options.
+    Reads data from 'inventory.csv', processes each row, and adds products to the database.
+
+    This function opens the 'inventory.csv' file, skips the header row, and iterates through each subsequent row.
+    For each row, it extracts the product name, cleans the price, quantity, and date updated using respective
+    cleaning functions, and creates a new Product object. The new product is then added to the database using
+    the 'add_product' function.
 
     Args:
-    id_str (str): A string representing an ID to be cleaned.
-    options (list): A list of valid options to compare the cleaned ID against.
+    None
 
     Returns:
-    int or None: The cleaned ID if it's valid, or None if an error occurs.
+    None
     """
-    try:
-        product_id = int(id_str)
-    except ValueError:
-        input('''
-              \n****** ID ERROR ******
-              \rThe ID format should be a number.
-              \rPress ENTER to try again.
-              \r************************''')
-        return
-    else:
-        if product_id in options:
-            return product_id
-        else:
-            input(f'''
-              \n****** ID ERROR ******
-              \rOptions: {options}
-              \rPress ENTER to try again.
-              \r**********************''')
-            return
-        
-        
+    with open('inventory.csv') as csvfile:
+        data=csv.reader(csvfile)
+        next(data)
+        for row in data:
+            product_name = row[0]
+            product_price = clean_price(row[1])
+            product_quantity = clean_quantity(row[2])
+            date_updated = clean_date(row[3])                
+            new_product = Product(product_name=product_name,
+                                    product_price=product_price,
+                                    product_quantity=product_quantity,
+                                    date_updated=date_updated)
+            add_product(new_product)
+
+
 def backup_to_csv():
     """
     Export product data from the database to a CSV file.
@@ -119,32 +149,8 @@ def backup_to_csv():
                                  product.product_price / 100, 
                                  product.product_quantity, 
                                  product.date_updated])
-    print(f"Data has been exported to {csv_file_path}")
-    
-
-def menu():
-    """
-    Display a menu of options for a product inventory program.
-
-    Returns:
-    str: The user's choice (V, A, B, or E).
-    """
-    while True:
-        print('''  
-              \nProduct Inventory
-              \rV) Display a product by its ID
-              \rA) Add Product
-              \rB) Backup All Pruducts
-              \rE) Exit''')
-        choice = input('What would you like to do? ').lower()
-        if choice in ['v', 'a', 'b', 'e']:
-            return choice
-        else:
-            input('''
-                  \rPlease choose one of the options above.
-                  \rA number from V, A, B, E.
-                  \rPress enter to try again.''')
-
+    print(f"Data Exported To: {csv_file_path}")
+   
 
 def search_products():
     """
@@ -179,67 +185,99 @@ def search_products():
             \rDate: {the_product.date_updated}''')
 
 
-def add_csv():
-    """
-    Adds data from a CSV file to a database session.
-
-    Args:
-    session: A SQLAlchemy database session object.
-    """
-    with open('inventory.csv') as csvfile:
-        data=csv.reader(csvfile)
-        next(data)
-        for row in data:
-            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none()
-            if product_in_db == None:
-                product_name = row[0]
-                product_price = clean_price(row[1])
-                product_quantity = clean_quantity(row[2])
-                date_updated = clean_date(row[3])                
-                new_product = Product(product_name=product_name,
-                                      product_price=product_price,
-                                      product_quantity=product_quantity,
-                                      date_updated=date_updated)
-                session.add(new_product)
-        session.commit()
-        
-        
-
 def add_product(new_product):
     """
-    Collects and validates information for a new product from user input.
+    Updates an existing product or adds a new product to the database.
 
-    This function guides the user to input a new product's name, price, quantity, and date updated. It validates the
-    input for each field to ensure it meets the required format and data type. If any input is invalid, the user is
-    prompted to re-enter the data until it's correct. Once all information is collected and validated, a new Product
-    object is created and added to the database session. The function then commits the changes to the database and
-    prints a success message or updates an existing product.
+    This function queries the database to check if a product with the same name as 'new_product' already exists.
+    If an existing product is found, it compares the date_updated values. If 'new_product' has a newer date, it updates
+    the existing product with the new details and prints a message. If 'new_product' has an older or equal date,
+    it prints a message indicating that the existing product remains unchanged. If no existing product is found,
+    'new_product' is considered a new product, and it is added to the database with a corresponding message.
 
     Args:
-    None
+    new_product (Product): The Product object to be added or used for updating.
 
     Returns:
     None
-    """    
-    if session.query(Product).filter(Product.product_name==product_name).first():
-        existing_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
-        if new_product.date_updated > existing_product.date_updated:
+    """
+    existing_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
+    if existing_product:
+        if existing_product.date_updated < new_product.date_updated:
             existing_product.product_name = new_product.product_name
             existing_product.product_price = new_product.product_price
             existing_product.product_quantity = new_product.product_quantity
             existing_product.date_updated = new_product.date_updated
             session.commit()
-            print('Product Updated!')
-            time.sleep(1.5)
-        elif new_product.date_updated < the_product.date_updated:
-            print('Product Entered Older Than Existing Records')
-        else:
-            print('Product Entered Matches Existing Records')
     else:
         session.add(new_product)
         session.commit()
-        print('Product Added!')
-        
+    
+
+def user_entered_product():
+    """
+    Collects and validates user input to create a new Product object.
+
+    This function guides the user to input details for a new product, including name, price, quantity, and date updated.
+    It uses validation functions to ensure the input meets the required format and data types. The user is prompted
+    to re-enter the data until it's correct. Once all information is collected and validated, a new Product object
+    is created and returned.
+
+    Args:
+    None
+
+    Returns:
+    Product: A new Product object with user-entered and validated information.
+    """
+    product_name = input("New Product Name: ")
+    price_error = True
+    while price_error:
+        price = input("New Product Price: ")
+        price = clean_price(price)
+        if type(price) == int:
+            price_error = False
+    quantity_error = True
+    while quantity_error:
+        quantity = input("New Product Quantity: ")
+        quantity = clean_quantity(quantity)
+        if type(quantity) == int:
+            quantity_error = False
+    date_error = True
+    while date_error:
+        date = input("New Product Date Updated (ex 04/08/2021): ")
+        date = clean_date(date)
+        if type(date) == datetime.date:
+            date_error = False
+    new_product = Product(product_name=product_name,
+                        product_price=price,
+                        product_quantity=quantity,
+                        date_updated=date)
+    return new_product
+
+
+def menu():
+    """
+    Display a menu of options for a product inventory program.
+
+    Returns:
+    str: The user's choice (V, A, B, or E).
+    """
+    while True:
+        print('''  
+              \nProduct Inventory
+              \rV) Display a product by its ID
+              \rA) Add Product
+              \rB) Backup All Pruducts
+              \rE) Exit''')
+        choice = input('What would you like to do? ').lower()
+        if choice in ['v', 'a', 'b', 'e']:
+            return choice
+        else:
+            input('''
+                  \rPlease choose one of the options above.
+                  \rA number from V, A, B, E.
+                  \rPress enter to try again.''')
+
 
 def app():
     """
@@ -252,30 +290,9 @@ def app():
         if choice == 'v':
             search_products()     
         elif choice == 'a':
-            product_name = input("New Product Name: ")
-            price_error = True
-            while price_error:
-                price = input("New Product Price: ")
-                price = clean_price(price)
-                if type(price) == int:
-                    price_error = False
-            quantity_error = True
-            while quantity_error:
-                quantity = input("New Product Quantity: ")
-                quantity = clean_quantity(quantity)
-                if type(quantity) == int:
-                    quantity_error = False
-            date_error = True
-            while date_error:
-                date = input("New Product Date Updated (ex 04/08/2021): ")
-                date = clean_date(date)
-                if type(date) == datetime.date:
-                    date_error = False
-            new_product = Product(product_name=product_name,
-                                product_price=price,
-                                product_quantity=quantity,
-                                date_updated=date)
+            new_product = user_entered_product()
             add_product(new_product)  
+            print('Product Added')
         elif choice == 'b':
             backup_to_csv()
         else:
