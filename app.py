@@ -211,11 +211,18 @@ def add_product():
                         product_quantity=quantity,
                         date_updated=date)
     if session.query(Product).filter(Product.product_name==product_name).first():
-        update(new_product)
+        the_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
+        the_product.product_name = new_product.product_name
+        the_product.product_price = new_product.product_price
+        the_product.product_quantity = new_product.product_quantity
+        the_product.date_updated = new_product.date_updated
+        session.commit()
+        print('Product Updated!')
+        time.sleep(1.5)
     else:
         session.add(new_product)
         session.commit()
-        print('Book Added!')
+        print('Product Added!')
         
 
 def search_products():
@@ -274,18 +281,6 @@ def edit_check(column_name, current_value):
     # print(column_name)
     print(current_value)
     
-
-def update(new_product):      
-    the_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
-    the_product.product_name = new_product.product_name
-    the_product.product_price = clean_price(new_product.product_price)
-    the_product.product_quantity = clean_quantity(new_product.product_quantity)
-    the_product.date_updated = clean_date(new_product.date_updated)
-    print(the_product)
-    # session.commit()
-    print('\nProduct Updated!')
-    # time.sleep(1.5)
-            
 
 if __name__ == '__main__':
     """
