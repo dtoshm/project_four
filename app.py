@@ -134,7 +134,15 @@ def backup_to_csv():
     Export product data from the database to a CSV file.
 
     Args:
-    session: A SQLAlchemy database session object.
+    None
+
+    This function retrieves all products from the database and exports their information to a CSV file. If no products
+    are present, a message is printed, and the function returns. The exported CSV file includes headers for
+    'product_name', 'product_price', 'product_quantity', and 'date_updated'. Date values are reformatted before
+    export to the 'MM/DD/YYYY' format. The exported file is named 'backup.csv', and a success message is printed.
+
+    Returns:
+    None
     """
     products = session.query(Product).all()
     if not products:
@@ -145,13 +153,16 @@ def backup_to_csv():
         csv_writer = csv.writer(csvfile)
         csv_writer.writerow(['product_name', 'product_price', 'product_quantity', 'date_updated']) # Headers
         for product in products:
+            date_str = str(product.date_updated).split('-')
+            formatted_date = f'{date_str[1]}/{date_str[2]}/{date_str[0]}'
             csv_writer.writerow([product.product_name, 
-                                 product.product_price / 100, 
-                                 product.product_quantity, 
-                                 product.date_updated])
+                                 str(f'${product.product_price / 100}'), 
+                                 str(product.product_quantity), 
+                                 formatted_date
+                                ])
     print(f"Data Exported To: {csv_file_path}")
-   
 
+   
 def search_products():
     """
     Allow the user to search for and display product details by entering a product ID.
