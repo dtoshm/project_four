@@ -179,13 +179,13 @@ def add_product():
     input for each field to ensure it meets the required format and data type. If any input is invalid, the user is
     prompted to re-enter the data until it's correct. Once all information is collected and validated, a new Product
     object is created and added to the database session. The function then commits the changes to the database and
-    prints a success message.
+    prints a success message or updates an existing product.
 
     Args:
     None
 
     Returns:
-    Nones
+    None
     """
     product_name = input("New Product Name: ")
     price_error = True
@@ -211,8 +211,7 @@ def add_product():
                         product_quantity=quantity,
                         date_updated=date)
     if session.query(Product).filter(Product.product_name==product_name).first():
-        update()
-        
+        update(new_product)
     else:
         session.add(new_product)
         session.commit()
@@ -271,11 +270,22 @@ def app():
             app_running = False
 
 
+def edit_check(column_name, current_value):
+    # print(column_name)
+    print(current_value)
+    
 
-def update():  
-    print("needs updating")  
-
-
+def update(new_product):      
+    the_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
+    the_product.product_name = new_product.product_name
+    the_product.product_price = clean_price(new_product.product_price)
+    the_product.product_quantity = clean_quantity(new_product.product_quantity)
+    the_product.date_updated = clean_date(new_product.date_updated)
+    print(the_product)
+    # session.commit()
+    print('\nProduct Updated!')
+    # time.sleep(1.5)
+            
 
 if __name__ == '__main__':
     """
