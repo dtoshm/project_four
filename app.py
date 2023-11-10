@@ -212,13 +212,18 @@ def add_product():
                         date_updated=date)
     if session.query(Product).filter(Product.product_name==product_name).first():
         the_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
-        the_product.product_name = new_product.product_name
-        the_product.product_price = new_product.product_price
-        the_product.product_quantity = new_product.product_quantity
-        the_product.date_updated = new_product.date_updated
-        session.commit()
-        print('Product Updated!')
-        time.sleep(1.5)
+        if new_product.date_updated > the_product.date_updated:
+            the_product.product_name = new_product.product_name
+            the_product.product_price = new_product.product_price
+            the_product.product_quantity = new_product.product_quantity
+            the_product.date_updated = new_product.date_updated
+            session.commit()
+            print('Product Updated!')
+            time.sleep(1.5)
+        elif new_product.date_updated < the_product.date_updated:
+            print('Product Entered Older Than Existing Records')
+        else:
+            print('Product Entered Matches Existing Records')
     else:
         session.add(new_product)
         session.commit()
@@ -276,11 +281,6 @@ def app():
             print("Thank you come again!")
             app_running = False
 
-
-def edit_check(column_name, current_value):
-    # print(column_name)
-    print(current_value)
-    
 
 if __name__ == '__main__':
     """
