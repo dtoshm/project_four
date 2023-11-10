@@ -99,31 +99,6 @@ def clean_id(id_str, options):
             return
         
         
-def add_csv():
-    """
-    Adds data from a CSV file to a database session.
-
-    Args:
-    session: A SQLAlchemy database session object.
-    """
-    with open('inventory.csv') as csvfile:
-        data=csv.reader(csvfile)
-        next(data)
-        for row in data:
-            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none()
-            if product_in_db == None:
-                product_name = row[0]
-                product_price = clean_price(row[1])
-                product_quantity = clean_quantity(row[2])
-                date_updated = clean_date(row[3])                
-                new_product = Product(product_name=product_name,
-                                      product_price=product_price,
-                                      product_quantity=product_quantity,
-                                      date_updated=date_updated)
-                session.add(new_product)
-        session.commit()
-
-
 def backup_to_csv():
     """
     Export product data from the database to a CSV file.
@@ -171,65 +146,6 @@ def menu():
                   \rPress enter to try again.''')
 
 
-def add_product():
-    """
-    Collects and validates information for a new product from user input.
-
-    This function guides the user to input a new product's name, price, quantity, and date updated. It validates the
-    input for each field to ensure it meets the required format and data type. If any input is invalid, the user is
-    prompted to re-enter the data until it's correct. Once all information is collected and validated, a new Product
-    object is created and added to the database session. The function then commits the changes to the database and
-    prints a success message or updates an existing product.
-
-    Args:
-    None
-
-    Returns:
-    None
-    """
-    product_name = input("New Product Name: ")
-    price_error = True
-    while price_error:
-        price = input("New Product Price: ")
-        price = clean_price(price)
-        if type(price) == int:
-            price_error = False
-    quantity_error = True
-    while quantity_error:
-        quantity = input("New Product Quantity: ")
-        quantity = clean_quantity(quantity)
-        if type(quantity) == int:
-            quantity_error = False
-    date_error = True
-    while date_error:
-        date = input("New Product Date Updated (ex 04/08/2021): ")
-        date = clean_date(date)
-        if type(date) == datetime.date:
-            date_error = False
-    new_product = Product(product_name=product_name,
-                        product_price=price,
-                        product_quantity=quantity,
-                        date_updated=date)
-    if session.query(Product).filter(Product.product_name==product_name).first():
-        the_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
-        if new_product.date_updated > the_product.date_updated:
-            the_product.product_name = new_product.product_name
-            the_product.product_price = new_product.product_price
-            the_product.product_quantity = new_product.product_quantity
-            the_product.date_updated = new_product.date_updated
-            session.commit()
-            print('Product Updated!')
-            time.sleep(1.5)
-        elif new_product.date_updated < the_product.date_updated:
-            print('Product Entered Older Than Existing Records')
-        else:
-            print('Product Entered Matches Existing Records')
-    else:
-        session.add(new_product)
-        session.commit()
-        print('Product Added!')
-        
-
 def search_products():
     """
     Allow the user to search for and display product details by entering a product ID.
@@ -263,6 +179,68 @@ def search_products():
             \rDate: {the_product.date_updated}''')
 
 
+def add_csv():
+    """
+    Adds data from a CSV file to a database session.
+
+    Args:
+    session: A SQLAlchemy database session object.
+    """
+    with open('inventory.csv') as csvfile:
+        data=csv.reader(csvfile)
+        next(data)
+        for row in data:
+            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none()
+            if product_in_db == None:
+                product_name = row[0]
+                product_price = clean_price(row[1])
+                product_quantity = clean_quantity(row[2])
+                date_updated = clean_date(row[3])                
+                new_product = Product(product_name=product_name,
+                                      product_price=product_price,
+                                      product_quantity=product_quantity,
+                                      date_updated=date_updated)
+                session.add(new_product)
+        session.commit()
+        
+        
+
+def add_product(new_product):
+    """
+    Collects and validates information for a new product from user input.
+
+    This function guides the user to input a new product's name, price, quantity, and date updated. It validates the
+    input for each field to ensure it meets the required format and data type. If any input is invalid, the user is
+    prompted to re-enter the data until it's correct. Once all information is collected and validated, a new Product
+    object is created and added to the database session. The function then commits the changes to the database and
+    prints a success message or updates an existing product.
+
+    Args:
+    None
+
+    Returns:
+    None
+    """    
+    if session.query(Product).filter(Product.product_name==product_name).first():
+        existing_product = session.query(Product).filter(Product.product_name==new_product.product_name).first()
+        if new_product.date_updated > existing_product.date_updated:
+            existing_product.product_name = new_product.product_name
+            existing_product.product_price = new_product.product_price
+            existing_product.product_quantity = new_product.product_quantity
+            existing_product.date_updated = new_product.date_updated
+            session.commit()
+            print('Product Updated!')
+            time.sleep(1.5)
+        elif new_product.date_updated < the_product.date_updated:
+            print('Product Entered Older Than Existing Records')
+        else:
+            print('Product Entered Matches Existing Records')
+    else:
+        session.add(new_product)
+        session.commit()
+        print('Product Added!')
+        
+
 def app():
     """
     Run a product inventory application.
@@ -274,7 +252,30 @@ def app():
         if choice == 'v':
             search_products()     
         elif choice == 'a':
-            add_product()  
+            product_name = input("New Product Name: ")
+            price_error = True
+            while price_error:
+                price = input("New Product Price: ")
+                price = clean_price(price)
+                if type(price) == int:
+                    price_error = False
+            quantity_error = True
+            while quantity_error:
+                quantity = input("New Product Quantity: ")
+                quantity = clean_quantity(quantity)
+                if type(quantity) == int:
+                    quantity_error = False
+            date_error = True
+            while date_error:
+                date = input("New Product Date Updated (ex 04/08/2021): ")
+                date = clean_date(date)
+                if type(date) == datetime.date:
+                    date_error = False
+            new_product = Product(product_name=product_name,
+                                product_price=price,
+                                product_quantity=quantity,
+                                date_updated=date)
+            add_product(new_product)  
         elif choice == 'b':
             backup_to_csv()
         else:
