@@ -210,10 +210,14 @@ def add_product():
                         product_price=price,
                         product_quantity=quantity,
                         date_updated=date)
-    session.add(new_product)
-    session.commit()
-    print('Book Added!')
-    
+    if session.query(Product).filter(Product.product_name==product_name).first():
+        update()
+        
+    else:
+        session.add(new_product)
+        session.commit()
+        print('Book Added!')
+        
 
 def search_products():
     """
@@ -260,9 +264,7 @@ def app():
             search_products()     
         elif choice == 'a':
             add_product()  
-            time.sleep(1.0)
         elif choice == 'b':
-            # backup database to csv
             backup_to_csv()
         else:
             print("Thank you come again!")
@@ -270,11 +272,8 @@ def app():
 
 
 
-def update(name_str):    
-    if session.query(Product).filter(Product.product_name==name_str).first():
-        print("Yes")
-    else:
-        print("No")
+def update():  
+    print("needs updating")  
 
 
 
@@ -284,5 +283,4 @@ if __name__ == '__main__':
     """
     Base.metadata.create_all(engine)
     app()
-    # update("Shiratamako - Rice Flour")
         
