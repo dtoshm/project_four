@@ -31,6 +31,7 @@ def clean_id(id_str, options):
         else:
             input(f'''
               \n****** ID ERROR ******
+              \rThe ID should be an option below.
               \rOptions: {options}
               \rPress ENTER to try again.
               \r**********************''')
@@ -151,7 +152,7 @@ def backup_to_csv():
     csv_file_path = 'backup.csv'
     with open(csv_file_path, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(['product_name', 'product_price', 'product_quantity', 'date_updated']) # Headers
+        csv_writer.writerow(['product_name', 'product_price', 'product_quantity', 'date_updated'])
         for product in products:
             date_str = str(product.date_updated).split('-')
             formatted_date = f'{date_str[1]}/{date_str[2]}/{date_str[0]}'
@@ -160,6 +161,7 @@ def backup_to_csv():
                                  str(product.product_quantity), 
                                  formatted_date
                                 ])
+    time.sleep(1)
     print(f"Data Exported To: {csv_file_path}")
 
    
@@ -303,6 +305,7 @@ def app():
         elif choice == 'a':
             new_product = user_entered_product()
             add_product(new_product)  
+            time.sleep(1)
             print('Product Added')
         elif choice == 'b':
             backup_to_csv()
@@ -317,4 +320,3 @@ if __name__ == '__main__':
     """
     Base.metadata.create_all(engine)
     app()
-        
